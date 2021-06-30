@@ -1,0 +1,5 @@
+{
+    "scriptId":"Your Script ID",
+    "rootDir": "build/",
+    "fileExtension": "ts"
+}
