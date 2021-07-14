@@ -18,9 +18,12 @@ if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
 const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4" // #sysadm
 
+const isJson = (req) => {
+  return req.is('application/json');
+}
 
 const isUrlVerification = (req) => {
-  if (req.body) {
+  if (isJson && req.body) {
     return (req.body.event_type === 'PING');
   } else {
     return false;
