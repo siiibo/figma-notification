@@ -30,6 +30,14 @@ const isUrlVerification = (req) => {
   }
 }
 
+const isEvent = (req) => {
+  if (isJson && req.body) {
+    return req.body.hasOwnProperty('event_type')
+  } else {
+    return false;
+  }
+}
+
 const slackClient = () => {
   const token = process.env.BOT_TOKEN;
   return new SlackClient(token);
@@ -46,18 +54,31 @@ app.post('/', (req:express.Request, res:express.Response) => {
   }
 
   const client = slackClient();
-  if(req.body.event_type === "FILE_COMMENT") {
-    const body = req.body;
-    client.chat.postMessage( {
-      channel: FIGMA_EVENT_POST_CHANNEL,
-      text: `
-${body.file_name}ファイルで${body.triggered_by.handle}さんよりコメントがありました。
-${body.comment.map(element => element.text).join("\n")}
-            `
-    })
-    return res.send('OK')
+  if (isEvent(req)){
+    const event = req.body;
+    handleFigmaEvent(client, event);
   }
+  return res.send('OK');
 });
+
+const handleFigmaEvent = (client, event) => {
+  switch(event.type) {
+    case 'FILE_COMMENT':
+      handleFileCommentEvent(client, event);
+      break;
+    case 'FILE_VERSION_UPDATE':
+      handleFileVersionUpdateEvent(client, event);
+      break;
+  }
+}
+
+const handleFileCommentEvent = (client, event) => {
+
+}
+const handleFileVersionUpdateEvent = (client, event) => {
+  
+}
+
 app.use(router)
 
 app.listen(3000,()=>{ console.log('Example app listening on port 3000!') })
