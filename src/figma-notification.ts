@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
-const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4" // #sysadm
+const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
 
 const isJson = (req) => {
   return req.is('application/json');
@@ -62,21 +62,63 @@ app.post('/', (req:express.Request, res:express.Response) => {
 });
 
 const handleFigmaEvent = (client, event) => {
-  switch(event.type) {
+  switch(event.event_type) {
     case 'FILE_COMMENT':
+      console.info(`FILE_COMMENT event`);
       handleFileCommentEvent(client, event);
       break;
     case 'FILE_VERSION_UPDATE':
+      console.info(`FILE_VERSION_UPDATE event`);
       handleFileVersionUpdateEvent(client, event);
       break;
   }
 }
 
 const handleFileCommentEvent = (client, event) => {
+  let comment;
+  // Figma内でメンションがあった場合、ユーザIDを名前に変更する。
+  if (event.comment.some(elem => elem.hasOwnProperty('mention'))){
+    comment = event.comment.map(elem => {
+      if(elem.hasOwnProperty('mention')){
+        const mentioned = event.mentions.filter(mention => 
+          Object.values(mention).indexOf(elem.mention) > -1
+        );
+        const mentionedHandle = mentioned[0].handle;
+        return {mention: `@${mentionedHandle}`};
+      }
+      return elem;
+    });
+  }
+  // メンションがない場合のコメント
+  else {
+    comment = event.comment;
+  }
+  const url = `https://www.figma.com/file/${event.file_key}/${event.file_name}`;
 
+  client.chat.postMessage({
+    channel: FIGMA_EVENT_POST_CHANNEL,
+    text: `
+:figma:
+${event.triggered_by.handle}さんが${event.file_name}にコメントしました。
+
+${comment.map(comment => Object.values(comment)).flat().join(" ")}
+
+${url}
+`
+  });
 }
+
 const handleFileVersionUpdateEvent = (client, event) => {
-  
+  const url = `https://www.figma.com/file/${event.file_key}/${event.file_name}`;
+  client.chat.postMessage({
+    channel: FIGMA_EVENT_POST_CHANNEL,
+    text: `
+:figma:
+${event.triggered_by.handle}さんが${event.file_name}のバージョンを更新しました。
+
+${url}
+`
+  });
 }
 
 app.use(router)
