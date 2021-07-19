@@ -50,7 +50,7 @@ app.post('/', (req:express.Request, res:express.Response) => {
   console.info(`[doPost raw event]\n\n${JSON.stringify(req.body)}`);
 
   if(isUrlVerification(req)) {
-    return res.send(req.body.passcode);
+    return res.send('OK');
   }
 
   const client = slackClient();
@@ -115,6 +115,8 @@ const handleFileVersionUpdateEvent = (client, event) => {
     text: `
 :figma:
 ${event.triggered_by.handle}さんが${event.file_name}のバージョンを更新しました。
+
+
 
 ${url}
 `
