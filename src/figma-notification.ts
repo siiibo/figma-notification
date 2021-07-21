@@ -1,18 +1,8 @@
 import {WebClient as SlackClient} from '@slack/web-api';
+// import { GasWebClient as SlackClient } from '@hi-se/web-api'; //GAS用SlackWebClient
 import express from 'express'
 
 const app: express.Express = express();
-
-// CORSの許可
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*")
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-  next()
-});
-
-// body-parserに基づいた着信リクエストの解析
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
@@ -44,7 +34,22 @@ const slackClient = () => {
 }
 
 
-// Figmaのpayloadの処理
+/* 
+Figma Webhookのリクエストをexpressを利用して処理。
+GASのdoPost関数に相当。
+*/
+
+// CORSの許可
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*")
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+  next()
+});
+
+// body-parserに基づいた着信リクエストの解析
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const router: express.Router = express.Router()
 app.post('/', (req:express.Request, res:express.Response) => {
   console.info(`[doPost raw event]\n\n${JSON.stringify(req.body)}`);
@@ -119,6 +124,7 @@ ${url}
   });
 }
 
+// ポートを指定してHTTPリクエストを受け付ける。
 app.use(router);
 app.set('port', (process.env.PORT || 3000));
 app.listen(app.get('port'), () => console.info(`Listning on port ${app.get('port')}`));
