@@ -119,6 +119,6 @@ ${url}
   });
 }
 
-app.use(router)
-
-app.listen(3000,()=>{ console.log('Example app listening on port 3000!') })
+app.use(router);
+app.set('port', (process.env.PORT || 3000));
+app.listen(app.get('port'), () => console.info(`Listning on port ${app.get('port')}`));
