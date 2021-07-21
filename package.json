@@ -19,7 +19,8 @@
     "express": "^4.17.1",
     "moment": "^2.29.1",
     "ts-node": "^10.1.0",
-    "webpack": "5.25.0"
+    "webpack": "5.25.0",
+    "webpack-node-externals": "^3.0.0"
   },
   "devDependencies": {
     "ts-loader": "^8.0.18",

@@ -1,5 +1,6 @@
 const path = require("path");
 const { node } = require("webpack");
+const nodeExternals = require("webpack-node-externals"); // https://github.com/neverendingqs/netlify-express/issues/4
 // const GasPlugin = require("gas-webpack-plugin");
 
 const mode =
@@ -42,6 +43,7 @@ module.exports = [
     module: { rules },
     resolve,
     target: "node", // added for nodejs
+    externals: [nodeExternals()], // https://github.com/neverendingqs/netlify-express/issues/4
     //plugins,
   },
 ];
