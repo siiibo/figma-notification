@@ -9,7 +9,6 @@
     "yarn": "1.22"
   },
   "scripts": {
-    "ts-node": "ts-node",
     "build": "npx webpack",
     "start": "build && node build/backend.js"
   },
