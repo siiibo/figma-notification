@@ -8,11 +8,11 @@ if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
 const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
 
-const isJson = (req) => {
+const isJson = (req: express.Request) => {
   return req.is('application/json');
 }
 
-const isUrlVerification = (req) => {
+const isUrlVerification = (req: express.Request) => {
   if (isJson && req.body) {
     return (req.body.event_type === 'PING');
   } else {
@@ -20,7 +20,7 @@ const isUrlVerification = (req) => {
   }
 }
 
-const isEvent = (req) => {
+const isEvent = (req: express.Request) => {
   if (isJson && req.body) {
     return req.body.hasOwnProperty('event_type')
   } else {
@@ -44,7 +44,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const router: express.Router = express.Router()
-app.post('/', (req:express.Request, res:express.Response) => {
+app.post('/', (req: express.Request, res: express.Response) => {
   console.info(`[doPost raw event]\n\n${JSON.stringify(req.body)}`);
 
   if(isUrlVerification(req)) {
