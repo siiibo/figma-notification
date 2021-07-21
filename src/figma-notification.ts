@@ -98,7 +98,7 @@ const handleFileCommentEvent = (client, event) => {
   client.chat.postMessage({
     channel: FIGMA_EVENT_POST_CHANNEL,
     text: `
-:figma: コメント(${event.triggered_by.handle}さん):
+:figma: コメント (${event.triggered_by.handle}さん):
 
 ${comment.map(comment => Object.values(comment)).flat().join(" ")}
 
@@ -112,7 +112,7 @@ const handleFileVersionUpdateEvent = (client, event) => {
   client.chat.postMessage({
     channel: FIGMA_EVENT_POST_CHANNEL,
     text: `
-:figma: バージョン更新(${event.triggered_by.handle}さん)
+:figma: バージョン更新 (${event.triggered_by.handle}さん):
 
 ${url}
 `
