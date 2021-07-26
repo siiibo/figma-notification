@@ -36,7 +36,7 @@ TypeScript + Heroku で作成している Slack Bot です。
 ## 補足
 
 ### GASへの移行について
-当初figma-notificationはGoogle Apps Scriptで作成する予定でしたが、[FigmaWebhookの制限](https://forum.figma.com/t/webhooks-the-character-limit-for-the-endpoint-is-not-enough/828)のため断念した。現在はHerokuで実装しているが、Heroku無料枠の信頼性の低さから上記の制限が緩和されたらGASへの移行をしたい。
+当初figma-notificationはGoogle Apps Scriptで作成する予定だったが、[FigmaWebhookの制限](https://forum.figma.com/t/webhooks-the-character-limit-for-the-endpoint-is-not-enough/828)のため断念した。現在はHerokuで実装しているが、Heroku無料枠の信頼性の低さから上記の制限が緩和されたらGASへの移行をしたい。
 
 以下、GASで実装する際の注意点(https://github.com/siiibo/shujinosuke より)
 
