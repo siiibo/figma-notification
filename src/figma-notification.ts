@@ -28,6 +28,23 @@ const isEvent = (req: express.Request) => {
   }
 }
 
+/*
+FigmaWebhookでは時間差でretriesが0の複数のリクエストを送ってくることあるため、
+イベント発生時間とタイムスタンプの時間差を元に処理の継続を判断する。
+ここでの基準は二つのパラメータの値の差が5秒以下。
+*/
+const isFirstRequest = (event) => {
+  if (event.retries === 0) {
+    return new Date(event.timestamp).getTime() - new Date(event.created_at).getTime() < 5000;
+  } else {
+    return false;
+  }
+}
+
+const isRetry = (event) => {
+  return (event.retries > 0);
+}
+
 const slackClient = () => {
   const token = process.env.BOT_TOKEN;
   return new SlackClient(token);
@@ -60,15 +77,17 @@ app.post('/', (req: express.Request, res: express.Response) => {
 });
 
 const handleFigmaEvent = (client, event) => {
-  switch(event.event_type) {
-    case 'FILE_COMMENT':
-      console.info(`FILE_COMMENT event`);
-      handleFileCommentEvent(client, event);
-      break;
-    case 'FILE_VERSION_UPDATE':
-      console.info(`FILE_VERSION_UPDATE event`);
-      handleFileVersionUpdateEvent(client, event);
-      break;
+  if(isFirstRequest(event) || isRetry(event)){
+    switch(event.event_type) {
+      case 'FILE_COMMENT':
+        console.info(`FILE_COMMENT event`);
+        handleFileCommentEvent(client, event);
+        break;
+      case 'FILE_VERSION_UPDATE':
+        console.info(`FILE_VERSION_UPDATE event`);
+        handleFileVersionUpdateEvent(client, event);
+        break;
+    }
   }
 }
 
