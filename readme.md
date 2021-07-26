@@ -1,18 +1,18 @@
 # figma-notification
 
-Google Apps Script で作成している Slack Bot です。
+TypeScript + Heroku で作成している Slack Bot です。
 
 ## 機能
 
-- Figmaファイルの変更をSlackに通知
+- Figmaファイルのバージョン更新をSlackに通知
+- Figmaファイル上のコメントをSlackに通知
 
 
 ## 環境構築
 
-- [clasp](https://github.com/google/clasp)をインストール
-  - GAS プロジェクトの開発をローカルで行うためのツール
-  - `npm install -g @google/clasp` など（詳細はリンク先参照）
-- figma-notification の GAS プロジェクトにアクセスできるアカウントで `clasp login`
+- [ngrok](https://ngrok.com/)をインストール
+  - brew cask install ngrokなど
+- [heroku CLI](https://devcenter.heroku.com/ja/articles/heroku-cli)をインストール
 - このリポジトリを clone して、以下実行
 
   ```sh
@@ -20,37 +20,27 @@ Google Apps Script で作成している Slack Bot です。
   asdf reshim yarn
   yarn
   ```
-- `clasp clone xxxSCRIPT-IDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`を実行(引数はfigma-notificationのスクリプトID)
-
-- 完全に新しいGASプロジェクトに移行する時は初回のみ以下の操作が必要（更新の場合は不要）
-  - `yarn run buildpush` を実行
-  - GASエディタを開き( `clasp open` )、 `init` 関数を実行する
-    - 初回の実行時はGASに権限付与する必要があるので、画面にしたがって権限を付与する
-    - `init` によってSlackTokenなど必要な情報がGASプロジェクトに登録される
 
 ## 開発
 
 ### テスト環境
 
-- テスト環境で開発する場合は `clasp deploy` で新規デプロイを行う
-  - GASはデプロイの度に新規URLが作成されるので注意
-  - コードを更新することが目的の場合は、新規デプロイではなくデプロイを更新する
-    - デプロイの更新をするには `clasp deploy -i <deploymentID>` を実行する
-- `https://api.slack.com/apps/A0108T7KFV0/event-subscriptions` からGASでデプロイしたWebAppのURL を設定
-  - `https://script.google.com/macros/s/<deploymentID>/exec` のような値
-- `https://api.slack.com/apps/A0108T7KFV0/interactive-messages` にも同じ値を設定
-- 適当なテストチャンネルに"Figma-notification"アプリをインストール、もしくはすでにインストール済みのチャンネルで作業
-- すでにクラウドにデプロイしたものがある場合、上記開発作業が完了したらデプロイ先ドメインの値に戻す
-
+- `.env-template`ファイルを基に`.env`ファイルを作成し、Slack Botのトークンを記述する。
+- figma-notificationリポジトリ上で `heroku local`を実行。localhostの5000番ポートでリクエストを受信できる
+- `ngrok http 5000`で、先程のlocalhost:5000をngrok proxy 経由で露出
+- [Figma APIサイト](https://www.figma.com/developers/api#webhooks_v2)上で、SiiiboチームのWebhookを登録
+  - Webhook新規登録の場合はPOSTリクエスト
+  - Webhook Endpoint URL更新の場合はPUTリクエスト
+    
 ### 本番環境
 
-- GASへの移行後一時的に同期は解除されている
-  - 近日中にGHAを用いて同期処理を実装する予定
-- ローカルでコードを変更した後手動でデプロイ
-  - `yarn run buildpush` を実行
-  - `clasp deploy -i <deploymentId>` を実行
-
 ## 補足
+
+### GASへの移行について
+当初figma-notificationはGoogle Apps Scriptで作成する予定だったが、[FigmaWebhookの制限](https://forum.figma.com/t/webhooks-the-character-limit-for-the-endpoint-is-not-enough/828)のため断念した。現在はHerokuで実装しているが、Heroku無料枠の信頼性の低さから上記の制限が緩和されたらGASへの移行をしたい。
+
+以下、GASで実装する際の注意点(https://github.com/siiibo/shujinosuke より)
+
 
 ### TypeScriptを使ってローカルでGASの開発を行う方法
 
