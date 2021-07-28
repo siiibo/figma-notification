@@ -26,13 +26,21 @@ TypeScript + Heroku で作成している Slack Bot です。
 ### テスト環境
 
 - `.env-template`ファイルを基に`.env`ファイルを作成し、Slack Botのトークンを記述する。
-- figma-notificationリポジトリ上で `heroku local`を実行。localhostの5000番ポートでリクエストを受信できる
+- `yarn build`で`backend.js`ファイルを生成する。
+- figma-notificationリポジトリ上で `heroku local`を実行(`yarn start`でも可)。localhostの5000番ポートでリクエストを受信できる
 - `ngrok http 5000`で、先程のlocalhost:5000をngrok proxy 経由で露出
 - [Figma APIサイト](https://www.figma.com/developers/api#webhooks_v2)上で、SiiiboチームのWebhookを登録
   - Webhook新規登録の場合はPOSTリクエスト
   - Webhook Endpoint URL更新の場合はPUTリクエスト
     
 ### 本番環境
+
+- Herokuに free dyno でデプロイする
+- アカウントはtech@siiibo.com。認証情報は既存メンバから取得する
+  - Heroku CLIをインストールすればローカルから情報の取得や設定ができる
+- ローカル開発時に.envに設定している認証情報は、Heroku では Config Var として設定する
+  - 待ち受けポートは、自動的に Heroku によってPORT環境変数経由で設定される(Botkit はPORT環境変数に対応している)
+- GitHub リポジトリと同期しているので、GitHub にmasterブランチを push すればデプロイされる (作業中)
 
 ## 補足
 
