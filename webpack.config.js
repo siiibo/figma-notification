@@ -37,7 +37,7 @@ const resolve = {
 
 module.exports = [
   {
-    mode: "development",
+    mode: mode,
     entry,
     output,
     module: { rules },
