@@ -6,7 +6,8 @@ const app: express.Express = express();
 
 if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
-const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
+//const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
+const FIGMA_EVENT_POST_CHANNEL = "CKPHC6M43"; // #design-portal
 
 const isJson = (req: express.Request) => {
   return req.is('application/json');
