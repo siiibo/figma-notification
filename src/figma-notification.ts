@@ -113,7 +113,8 @@ const handleFileCommentEvent = (client, event) => {
   else {
     comment = event.comment;
   }
-  const url = `https://www.figma.com/file/${event.file_key}/${event.file_name}`;
+  const file_name = event.file_name.replace(/\s+/g,'-');
+  const url = `https://www.figma.com/file/${event.file_key}/${file_name}`;
 
   client.chat.postMessage({
     channel: FIGMA_EVENT_POST_CHANNEL,
@@ -128,7 +129,8 @@ ${url}
 }
 
 const handleFileVersionUpdateEvent = (client, event) => {
-  const url = `https://www.figma.com/file/${event.file_key}/${event.file_name}`;
+  const file_name = event.file_name.replace(/\s+/g,'-');
+  const url = `https://www.figma.com/file/${event.file_key}/${file_name}`;
   client.chat.postMessage({
     channel: FIGMA_EVENT_POST_CHANNEL,
     text: `
