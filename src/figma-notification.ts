@@ -42,6 +42,8 @@ const isFirstRequest = (event) => {
   }
 }
 
+// リトライ判定用関数
+// Heroku Free Dynoとの相性が悪く、連投の原因となるため使用しない
 const isRetry = (event) => {
   return (event.retries > 0);
 }
@@ -78,7 +80,7 @@ app.post('/', (req: express.Request, res: express.Response) => {
 });
 
 const handleFigmaEvent = (client, event) => {
-  if(isFirstRequest(event) || isRetry(event)){
+  if(isFirstRequest(event)){
     switch(event.event_type) {
       case 'FILE_COMMENT':
         console.info(`FILE_COMMENT event`);
