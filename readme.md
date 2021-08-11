@@ -39,13 +39,13 @@ TypeScript + Heroku で作成している Slack Bot です。
 - アカウントはtech@siiibo.com。認証情報は既存メンバから取得する
   - Heroku CLIをインストールすればローカルから情報の取得や設定ができる
 - ローカル開発時に.envに設定している認証情報は、Heroku では Config Var として設定する
-  - 待ち受けポートは、自動的に Heroku によってPORT環境変数経由で設定される(Botkit はPORT環境変数に対応している)
+  - 待ち受けポートは、自動的に Heroku によってPORT環境変数経由で設定される
 - GitHub リポジトリと同期しているので、GitHub にmasterブランチを push すればデプロイされる (作業中)
 
 ## 補足
 
 ### GASへの移行について
-当初figma-notificationはGoogle Apps Scriptで作成する予定だったが、[FigmaWebhookの制限](https://forum.figma.com/t/webhooks-the-character-limit-for-the-endpoint-is-not-enough/828)のため断念した。現在はHerokuで実装しているが、Heroku無料枠の信頼性の低さから上記の制限が緩和されたらGASへの移行をしたい。
+当初figma-notificationはGoogle Apps Scriptで作成する予定だったが、[Figma Webhookの制限](https://forum.figma.com/t/webhooks-the-character-limit-for-the-endpoint-is-not-enough/828)のため断念した。現在はHerokuで実装しているが、Heroku無料枠の信頼性の低さから上記の制限が緩和されたらGASへの移行をしたい。
 
 以下、GASで実装する際の注意点(https://github.com/siiibo/shujinosuke より)
 
