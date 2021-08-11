@@ -30,7 +30,7 @@ const isEvent = (req: express.Request) => {
 }
 
 /*
-FigmaWebhookでは時間差でretriesが0の複数のリクエストを送ってくることあるため、
+Figma Webhookでは時間差でretriesが0の複数のリクエストを送ってくることあるため、
 イベント発生時間とタイムスタンプの時間差を元に処理の継続を判断する。
 ここでの基準は二つのパラメータの値の差が5秒以下。
 */
@@ -96,7 +96,7 @@ const handleFigmaEvent = (client, event) => {
 
 const handleFileCommentEvent = (client, event) => {
   let comment;
-  // Figma内でメンションがあった場合、ユーザIDを名前に変更する。
+  // Figma内でメンションがあった場合、ユーザIDを名前に置換する。
   if (event.comment.some(elem => elem.hasOwnProperty('mention'))) {
     comment = event.comment.map(elem => {
       if (elem.hasOwnProperty('mention')) {
@@ -109,8 +109,8 @@ const handleFileCommentEvent = (client, event) => {
       return elem;
     });
   }
-  // メンションがない場合のコメント
   else {
+    // メンションがない場合のコメント
     comment = event.comment;
   }
   const file_name = event.file_name.replace(/\s+/g, '-');
