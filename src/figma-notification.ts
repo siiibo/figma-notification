@@ -1,4 +1,4 @@
-import {WebClient as SlackClient} from '@slack/web-api';
+import { WebClient as SlackClient } from '@slack/web-api';
 // import { GasWebClient as SlackClient } from '@hi-se/web-api'; //GAS用SlackWebClient
 import express from 'express'
 
@@ -67,12 +67,12 @@ const router: express.Router = express.Router()
 app.post('/', (req: express.Request, res: express.Response) => {
   console.info(`[doPost raw event]\n\n${JSON.stringify(req.body)}`);
 
-  if(isUrlVerification(req)) {
+  if (isUrlVerification(req)) {
     return res.send('OK');
   }
 
   const client = slackClient();
-  if (isEvent(req)){
+  if (isEvent(req)) {
     const event = req.body;
     handleFigmaEvent(client, event);
   }
@@ -80,8 +80,8 @@ app.post('/', (req: express.Request, res: express.Response) => {
 });
 
 const handleFigmaEvent = (client, event) => {
-  if(isFirstRequest(event)){
-    switch(event.event_type) {
+  if (isFirstRequest(event)) {
+    switch (event.event_type) {
       case 'FILE_COMMENT':
         console.info(`FILE_COMMENT event`);
         handleFileCommentEvent(client, event);
@@ -97,14 +97,14 @@ const handleFigmaEvent = (client, event) => {
 const handleFileCommentEvent = (client, event) => {
   let comment;
   // Figma内でメンションがあった場合、ユーザIDを名前に変更する。
-  if (event.comment.some(elem => elem.hasOwnProperty('mention'))){
+  if (event.comment.some(elem => elem.hasOwnProperty('mention'))) {
     comment = event.comment.map(elem => {
-      if(elem.hasOwnProperty('mention')){
-        const mentioned = event.mentions.filter(mention => 
+      if (elem.hasOwnProperty('mention')) {
+        const mentioned = event.mentions.filter(mention =>
           Object.values(mention).indexOf(elem.mention) > -1
         );
         const mentionedHandle = mentioned[0].handle;
-        return {mention: `@${mentionedHandle}`};
+        return { mention: `@${mentionedHandle}` };
       }
       return elem;
     });
@@ -113,7 +113,7 @@ const handleFileCommentEvent = (client, event) => {
   else {
     comment = event.comment;
   }
-  const file_name = event.file_name.replace(/\s+/g,'-');
+  const file_name = event.file_name.replace(/\s+/g, '-');
   const url = `https://www.figma.com/file/${event.file_key}/${file_name}`;
 
   client.chat.postMessage({
@@ -129,7 +129,7 @@ ${url}
 }
 
 const handleFileVersionUpdateEvent = (client, event) => {
-  const file_name = event.file_name.replace(/\s+/g,'-');
+  const file_name = event.file_name.replace(/\s+/g, '-');
   const url = `https://www.figma.com/file/${event.file_key}/${file_name}`;
   client.chat.postMessage({
     channel: FIGMA_EVENT_POST_CHANNEL,
