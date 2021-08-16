@@ -9,12 +9,8 @@ if (process.env.NODE_ENV !== "production") require("dotenv").config();
 //const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
 const FIGMA_EVENT_POST_CHANNEL = "CKPHC6M43"; // #design-portal
 
-const isJson = (req: express.Request) => {
-  return req.is('application/json');
-}
-
 const isUrlVerification = (req: express.Request) => {
-  if (isJson && req.body) {
+  if (req.body) {
     return (req.body.event_type === 'PING');
   } else {
     return false;
@@ -22,7 +18,7 @@ const isUrlVerification = (req: express.Request) => {
 }
 
 const isEvent = (req: express.Request) => {
-  if (isJson && req.body) {
+  if (req.body) {
     return req.body.hasOwnProperty('event_type')
   } else {
     return false;
