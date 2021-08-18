@@ -1,5 +1,7 @@
 const path = require("path");
-const GasPlugin = require("gas-webpack-plugin");
+const { node } = require("webpack");
+const nodeExternals = require("webpack-node-externals"); // https://github.com/neverendingqs/netlify-express/issues/4
+// const GasPlugin = require("gas-webpack-plugin");
 
 const mode =
   process.env.NODE_ENV === "development" ? "development" : "production";
@@ -31,15 +33,17 @@ const resolve = {
     os: false,
   },
 };
-const plugins = [new GasPlugin()];
+// const plugins = [new GasPlugin()];
 
 module.exports = [
   {
-    mode: "development",
+    mode: mode,
     entry,
     output,
     module: { rules },
     resolve,
-    plugins,
+    target: "node", // added for nodejs
+    externals: [nodeExternals()], // https://github.com/neverendingqs/netlify-express/issues/4
+    //plugins,
   },
 ];
