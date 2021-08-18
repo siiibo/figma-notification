@@ -40,7 +40,9 @@ TypeScript + Heroku で作成している Slack Bot です。
   - Heroku CLIをインストールすればローカルから情報の取得や設定ができる
 - ローカル開発時に.envに設定している認証情報は、Heroku では Config Var として設定する
   - 待ち受けポートは、自動的に Heroku によってPORT環境変数経由で設定される
-- GitHub リポジトリと同期しているので、GitHub にmasterブランチを push すればデプロイされる (作業中)
+- GitHub リポジトリと同期しているので、GitHub にmasterブランチを push すればデプロイされる
+  - Herokuの[Node.jsビルドパックのビルドプロセス](https://devcenter.heroku.com/ja/articles/nodejs-support#customizing-the-build-process)にしたがって、`build`及び`heroku-postbuild`などのスクリプトが実行される
+  - サーバ起動コマンドは`Procfile`に記述する
 
 ## 補足
 
