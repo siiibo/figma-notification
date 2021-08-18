@@ -44,6 +44,11 @@ const isRetry = (event) => {
   return (event.retries > 0);
 }
 
+const createUrl = (event) => {
+  const file_name = event.file_name.replace(/\s+/g, '-');
+  return `https://www.figma.com/file/${event.file_key}/${file_name}`
+}
+
 const slackClient = () => {
   const token = process.env.BOT_TOKEN;
   return new SlackClient(token);
@@ -109,8 +114,7 @@ const handleFileCommentEvent = (client, event) => {
     // メンションがない場合のコメント
     comment = event.comment;
   }
-  const file_name = event.file_name.replace(/\s+/g, '-');
-  const url = `https://www.figma.com/file/${event.file_key}/${file_name}`;
+  const url = createUrl(event);
 
   client.chat.postMessage({
     channel: FIGMA_EVENT_POST_CHANNEL,
@@ -125,8 +129,7 @@ ${url}
 }
 
 const handleFileVersionUpdateEvent = (client, event) => {
-  const file_name = event.file_name.replace(/\s+/g, '-');
-  const url = `https://www.figma.com/file/${event.file_key}/${file_name}`;
+  const url = createUrl(event);
   client.chat.postMessage({
     channel: FIGMA_EVENT_POST_CHANNEL,
     text: `
