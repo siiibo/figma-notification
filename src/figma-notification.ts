@@ -6,7 +6,7 @@ const app: express.Express = express();
 
 if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
-//const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
+// const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
 const FIGMA_EVENT_POST_CHANNEL = "CKPHC6M43"; // #design-portal
 
 const isUrlVerification = (req: express.Request) => {
@@ -45,8 +45,17 @@ const isRetry = (event) => {
 }
 
 const createUrl = (event) => {
-  const file_name = event.file_name.replace(/\s+/g, '-');
-  return `https://www.figma.com/file/${event.file_key}/${file_name}`
+  let url = "";
+  switch (event.event_type) {
+    case 'FILE_COMMENT':
+      url = `https://www.figma.com/file/${event.file_key}#${event.comment_id}`
+      break;
+    case 'FILE_VERSION_UPDATE':
+      const file_name = event.file_name.replace(/\s+/g, '-');
+      url = `https://www.figma.com/file/${event.file_key}/${file_name}`
+      break;
+  }
+  return url;
 }
 
 const slackClient = () => {
@@ -118,13 +127,14 @@ const handleFileCommentEvent = (client, event) => {
 
   client.chat.postMessage({
     channel: FIGMA_EVENT_POST_CHANNEL,
-    text: `
-:figma: ${event.triggered_by.handle}：
-
-${comment.map(comment => Object.values(comment)).flat().join(" ")}
-
-${url}
-`
+    attachments: [
+      {
+        author_name: `${event.triggered_by.handle}`,
+        fallback: `${event.triggered_by.handle}:\n\n${comment.map(comment => Object.values(comment)).flat().join(" ")}\n\n<${url}|*${event.file_name}*>`,
+        text: `${comment.map(comment => Object.values(comment)).flat().join(" ")}`,
+        pretext: `New comment on <${url}|*${event.file_name}*>`,
+      }
+    ]
   });
 }
 
@@ -132,11 +142,14 @@ const handleFileVersionUpdateEvent = (client, event) => {
   const url = createUrl(event);
   client.chat.postMessage({
     channel: FIGMA_EVENT_POST_CHANNEL,
-    text: `
-:figma: バージョン更新（${event.triggered_by.handle}）：
-
-${url}
-`
+    attachments: [
+      {
+        fallback: `バージョン更新（${event.triggered_by.handle})：\n\n<${url}|*${event.file_name}*>`,
+        text: `<${url}|*${event.file_name}*>のバージョンが更新されました！`,
+        pretext: `File version updated by *${event.triggered_by.handle}*`,
+        color: "#3399ff"
+      }
+    ]
   });
 }
 
