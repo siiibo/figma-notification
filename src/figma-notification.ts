@@ -45,8 +45,17 @@ const isRetry = (event) => {
 }
 
 const createUrl = (event) => {
-  const file_name = event.file_name.replace(/\s+/g, '-');
-  return `https://www.figma.com/file/${event.file_key}/${file_name}`
+  let url = "";
+  switch (event.event_type) {
+    case 'FILE_COMMENT':
+      url = `https://www.figma.com/file/${event.file_key}#${event.comment_id}`
+      break;
+    case 'FILE_VERSION_UPDATE':
+      const file_name = event.file_name.replace(/\s+/g, '-');
+      url = `https://www.figma.com/file/${event.file_key}/${file_name}`
+      break;
+  }
+  return url;
 }
 
 const slackClient = () => {
