@@ -32,7 +32,7 @@ Figma Webhookでは時間差でretriesが0の複数のリクエストを送っ�
 */
 const isFirstRequest = (event) => {
   if (event.retries === 0) {
-    return new Date(event.timestamp).getTime() - new Date(event.created_at).getTime() < 30 * 1000;
+    return new Date(event.timestamp).getTime() - new Date(event.created_at).getTime() < 30000;
   } else {
     return false;
   }
