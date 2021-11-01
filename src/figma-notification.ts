@@ -28,11 +28,11 @@ const isEvent = (req: express.Request) => {
 /*
 Figma Webhookでは時間差でretriesが0の複数のリクエストを送ってくることあるため、
 イベント発生時間とタイムスタンプの時間差を元に処理の継続を判断する。
-ここでの基準は二つのパラメータの値の差が5秒以下。
+ここでの基準は二つのパラメータの値の差が30秒以下。
 */
 const isFirstRequest = (event) => {
   if (event.retries === 0) {
-    return new Date(event.timestamp).getTime() - new Date(event.created_at).getTime() < 5000;
+    return new Date(event.timestamp).getTime() - new Date(event.created_at).getTime() < 30 * 1000;
   } else {
     return false;
   }
