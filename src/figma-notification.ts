@@ -104,6 +104,16 @@ const handleFigmaEvent = (client, event) => {
   }
 }
 
+// コメントがTrelloカードリンクを含むかを判定する関数
+// getCardIdとして、カードのIDを返す関数の方が無駄が少ない
+const includesTrelloCardUrl = (message) => {
+  return (message.includes("https://trello.com/c/"));
+}
+
+const trelloAttachFigmaFileToCard = (cardId, figmaFileUrl) => {
+  const url = `https://api.trello.com/1/cards/${cardId}/attachments?url=${figmaFileUrl}`;
+}
+
 const handleFileCommentEvent = (client, event) => {
   let comment;
   // Figma内でメンションがあった場合、ユーザIDを名前に置換する。
