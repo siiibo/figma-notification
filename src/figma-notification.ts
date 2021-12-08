@@ -1,6 +1,7 @@
 import { WebClient as SlackClient } from '@slack/web-api';
 // import { GasWebClient as SlackClient } from '@hi-se/web-api'; //GAS用SlackWebClient
 import express from 'express'
+import fetch from 'node-fetch'
 
 const app: express.Express = express();
 
@@ -105,13 +106,21 @@ const handleFigmaEvent = (client, event) => {
 }
 
 // コメントがTrelloカードリンクを含むかを判定する関数
-// getCardIdとして、カードのIDを返す関数の方が無駄が少ない
-const includesTrelloCardUrl = (message) => {
-  return (message.includes("https://trello.com/c/"));
+const includesTrelloCardId = (text) => {
+  const cardId = text.match(/(?<=(trello.com\/c\/))(.*)(?=\/)/g);
+  if (cardId) {
+    return true;
+  }
+  return false;
 }
 
-const trelloAttachFigmaFileToCard = (cardId, figmaFileUrl) => {
-  const url = `https://api.trello.com/1/cards/${cardId}/attachments?url=${figmaFileUrl}`;
+// Trello APIを通じて、指定のカードにFigmaファイルへのURLを添付
+const trelloAttachFigmaFileToCard = async (cardId, figmaFileUrl, figmaFileName) => {
+  const url =
+    `https://api.trello.com/1/cards/${cardId}/attachments?key=${process.env.TRELLO_API_KEY}&token=${process.env.TRELLO_TOKEN}&url=${figmaFileUrl}&name=${figmaFileName}`;
+  const options = { method: "post" };
+  const response = await fetch(url, options);
+  return response;
 }
 
 const handleFileCommentEvent = (client, event) => {
@@ -134,18 +143,25 @@ const handleFileCommentEvent = (client, event) => {
     comment = event.comment;
   }
   const url = createUrl(event);
+  const joined_comment = comment.map(comment => Object.values(comment)).flat().join(" ");
 
   client.chat.postMessage({
     channel: FIGMA_EVENT_POST_CHANNEL,
     attachments: [
       {
         author_name: `${event.triggered_by.handle}`,
-        fallback: `${event.triggered_by.handle}:\n\n${comment.map(comment => Object.values(comment)).flat().join(" ")}\n\n<${url}|*${event.file_name}*>`,
-        text: `${comment.map(comment => Object.values(comment)).flat().join(" ")}`,
+        fallback: `${event.triggered_by.handle}:\n\n${joined_comment}\n\n<${url}|*${event.file_name}*>`,
+        text: joined_comment,
         pretext: `New comment on <${url}|*${event.file_name}*>`,
       }
     ]
   });
+
+  // trelloカードのリンクを含む場合、trelloで相互リンクを形成する
+  if (includesTrelloCardId(joined_comment)) {
+    const trelloCardId = joined_comment.match(/(?<=(trello.com\/c\/))(.*)(?=\/)/g)[0];
+    trelloAttachFigmaFileToCard(trelloCardId, url, event.file_name);
+  }
 }
 
 const handleFileVersionUpdateEvent = (client, event) => {
