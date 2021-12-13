@@ -7,8 +7,8 @@ const app: express.Express = express();
 
 if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
-// const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
-const FIGMA_EVENT_POST_CHANNEL = "CKPHC6M43"; // #design-portal
+const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
+// const FIGMA_EVENT_POST_CHANNEL = "CKPHC6M43"; // #design-portal
 
 const isUrlVerification = (req: express.Request) => {
   if (req.body) {
@@ -74,9 +74,9 @@ const extractTrelloCardIdsFromComment = (text) => {
 }
 
 // Trello APIを通じて、指定のカードにFigmaファイルへのURLを添付
-const trelloAttachFigmaFileToCard = async (cardId, figmaFileUrl, figmaFileName) => {
+const trelloAttachFigmaFileToCard = async (cardId, figmaCommentUrl, figmaFileName) => {
   const url =
-    `https://api.trello.com/1/cards/${cardId}/attachments?key=${process.env.TRELLO_API_KEY}&token=${process.env.TRELLO_TOKEN}&url=${figmaFileUrl}&name=${figmaFileName}`;
+    `https://api.trello.com/1/cards/${cardId}/attachments?key=${process.env.TRELLO_API_KEY}&token=${process.env.TRELLO_TOKEN}&name=${figmaFileName}&url=${figmaCommentUrl}`;
   const options = { method: "post" };
   const response = await fetch(url, options);
   return response;
@@ -128,7 +128,7 @@ const handleFigmaEvent = (client, event) => {
   }
 }
 
-const handleFileCommentEvent = (client, event) => {
+const handleFileCommentEvent = async (client, event) => {
   let comment;
   // Figma内でメンションがあった場合、ユーザIDを名前に置換する。
   if (event.comment.some(elem => elem.hasOwnProperty('mention'))) {
@@ -165,12 +165,10 @@ const handleFileCommentEvent = (client, event) => {
   // trelloカードのリンクを含む場合、trelloで相互リンクを形成する
   if (includesTrelloCardId(joined_comment)) {
     const trelloCardIds = extractTrelloCardIdsFromComment(joined_comment);
-    const responses = trelloCardIds.map(trelloCardId => {
-      trelloAttachFigmaFileToCard(trelloCardId, url, event.file_name);
-    });
-    responses.forEach(res => {
-      console.info(`[trello Api result]\n\n${res}`);
-    })
+    const responses = await Promise.all(trelloCardIds.map(async trelloCardId => {
+      return await trelloAttachFigmaFileToCard(trelloCardId, url, event.file_name);
+    }));
+    console.info(`[trello api results]\n\n${JSON.stringify(responses)}`);
   }
 }
 
