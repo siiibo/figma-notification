@@ -59,6 +59,29 @@ const createUrl = (event) => {
   return url;
 }
 
+// コメントがTrelloカードリンクを含むかを判定する関数
+const includesTrelloCardId = (text) => {
+  return text.includes("trello.com/c/");
+}
+
+// コメントからTrelloカードIDを抽出する関数
+const extractTrelloCardIdsFromComment = (text) => {
+  return text
+    .split(/(?=trello.com\/c\/)/g)
+    .filter(elem => elem.includes("trello.com/c/"))
+    .map(elem => elem.match(/(?<=trello.com\/c\/)(.*?)(?=\/)/g))
+    .flat();
+}
+
+// Trello APIを通じて、指定のカードにFigmaファイルへのURLを添付
+const trelloAttachFigmaFileToCard = async (cardId, figmaFileUrl, figmaFileName) => {
+  const url =
+    `https://api.trello.com/1/cards/${cardId}/attachments?key=${process.env.TRELLO_API_KEY}&token=${process.env.TRELLO_TOKEN}&url=${figmaFileUrl}&name=${figmaFileName}`;
+  const options = { method: "post" };
+  const response = await fetch(url, options);
+  return response;
+}
+
 const slackClient = () => {
   const token = process.env.BOT_TOKEN;
   return new SlackClient(token);
@@ -105,24 +128,6 @@ const handleFigmaEvent = (client, event) => {
   }
 }
 
-// コメントがTrelloカードリンクを含むかを判定する関数
-const includesTrelloCardId = (text) => {
-  const cardId = text.match(/(?<=(trello.com\/c\/))(.*)(?=\/)/g);
-  if (cardId) {
-    return true;
-  }
-  return false;
-}
-
-// Trello APIを通じて、指定のカードにFigmaファイルへのURLを添付
-const trelloAttachFigmaFileToCard = async (cardId, figmaFileUrl, figmaFileName) => {
-  const url =
-    `https://api.trello.com/1/cards/${cardId}/attachments?key=${process.env.TRELLO_API_KEY}&token=${process.env.TRELLO_TOKEN}&url=${figmaFileUrl}&name=${figmaFileName}`;
-  const options = { method: "post" };
-  const response = await fetch(url, options);
-  return response;
-}
-
 const handleFileCommentEvent = (client, event) => {
   let comment;
   // Figma内でメンションがあった場合、ユーザIDを名前に置換する。
@@ -159,8 +164,13 @@ const handleFileCommentEvent = (client, event) => {
 
   // trelloカードのリンクを含む場合、trelloで相互リンクを形成する
   if (includesTrelloCardId(joined_comment)) {
-    const trelloCardId = joined_comment.match(/(?<=(trello.com\/c\/))(.*)(?=\/)/g)[0];
-    trelloAttachFigmaFileToCard(trelloCardId, url, event.file_name);
+    const trelloCardIds = extractTrelloCardIdsFromComment(joined_comment);
+    const responses = trelloCardIds.map(trelloCardId => {
+      trelloAttachFigmaFileToCard(trelloCardId, url, event.file_name);
+    });
+    responses.forEach(res => {
+      console.info(`[trello Api result]\n\n${res}`);
+    })
   }
 }
 
