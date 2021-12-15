@@ -59,6 +59,13 @@ const createUrl = (event) => {
   return url;
 }
 
+const getTrelloAuthInfo = () => {
+  return {
+    key: process.env.TRELLO_API_KEY,
+    token: process.env.TRELLO_TOKEN
+  }
+}
+
 // コメントがTrelloカードリンクを含むかを判定する関数
 const includesTrelloCardId = (text) => {
   return text.includes("trello.com/c/");
@@ -75,9 +82,16 @@ const extractTrelloCardIdsFromComment = (text) => {
 
 // Trello APIを通じて、指定のカードにFigmaファイルへのURLを添付
 const attachFigmaFileToTrelloCard = async (cardId, figmaCommentUrl, figmaFileName) => {
-  const url =
-    `https://api.trello.com/1/cards/${cardId}/attachments?key=${process.env.TRELLO_API_KEY}&token=${process.env.TRELLO_TOKEN}&name=${figmaFileName}&url=${figmaCommentUrl}`;
-  const options = { method: "post" };
+  const url = `https://api.trello.com/1/cards/${cardId}/attachments`;
+  const options = {
+    method: "post",
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...getTrelloAuthInfo(),
+      name: figmaFileName,
+      url: figmaCommentUrl
+    })
+  };
   return fetch(url, options);
 }
 
