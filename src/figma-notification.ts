@@ -78,8 +78,7 @@ const attachFigmaFileToTrelloCard = async (cardId, figmaCommentUrl, figmaFileNam
   const url =
     `https://api.trello.com/1/cards/${cardId}/attachments?key=${process.env.TRELLO_API_KEY}&token=${process.env.TRELLO_TOKEN}&name=${figmaFileName}&url=${figmaCommentUrl}`;
   const options = { method: "post" };
-  const response = await fetch(url, options);
-  return response;
+  return fetch(url, options);
 }
 
 const slackClient = () => {
