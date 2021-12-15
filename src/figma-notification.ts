@@ -7,8 +7,8 @@ const app: express.Express = express();
 
 if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
-const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
-//const FIGMA_EVENT_POST_CHANNEL = "CKPHC6M43"; // #design-portal
+// const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
+const FIGMA_EVENT_POST_CHANNEL = "CKPHC6M43"; // #design-portal
 
 const isUrlVerification = (req: express.Request) => {
   if (req.body) {
@@ -76,7 +76,7 @@ const extractTrelloCardIdsFromComment = (text) => {
   return text
     .split(/(?=trello.com\/c\/)/g)
     .filter(elem => elem.includes("trello.com/c/"))
-    .map(elem => elem.match(/(?<=trello.com\/c\/)(.*?)(?=\/)/g))
+    .map(elem => elem.match(/(?<=(trello.com\/c\/))[0-9A-Za-z]+/g))
     .flat();
 }
 
