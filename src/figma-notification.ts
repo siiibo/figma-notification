@@ -7,7 +7,7 @@ const app: express.Express = express();
 
 if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
-// const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
+//const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
 const FIGMA_EVENT_POST_CHANNEL = "CKPHC6M43"; // #design-portal
 
 const isUrlVerification = (req: express.Request) => {
@@ -96,22 +96,11 @@ const attachFigmaFileToTrelloCard = async (cardId, figmaCommentUrl, figmaFileNam
 }
 
 // TrelloカードURLをSlack表示用に短縮する。
-const shortenTrelloUrls = (text) => {
-  const trelloCardFullTerseUrlPairs = text
-    .split(/(?=https:\/\/trello.com\/c\/)/g)
-    .map(elem => {
-      const fullUrl = elem.match(/https:\/\/trello.com\/c\/[0-9A-Za-z]+\/[a-zA-Z0-9\-\.\?\,\'\/\\\+&amp;%\$#_]+/g);
-      // カード名まで含めたURLの記述がある場合のみ、短縮の対象とする。
-      if (fullUrl) {
-        return {
-          fullUrl: fullUrl[0],
-          terseUrl: elem.match(/https:\/\/trello.com\/c\/[0-9A-Za-z]+/)[0]
-        }
-      }
-      return null;
-    })
-    .filter(elem => elem);
-  trelloCardFullTerseUrlPairs.forEach(urlPair => text = text.replace(urlPair.fullUrl, `<${urlPair.fullUrl} | ${urlPair.terseUrl} >`));
+const shortenTrelloUrls = (text: String): String => {
+  const fullUrlRegExp = new RegExp("https://trello\.com/c/[0-9A-Za-z]+(/[a-zA-Z0-9.?,'/\\+&%$#_-]+)?", "g");
+  const fullUrls = text.match(fullUrlRegExp);
+  const uniqFullUrls = new Set(fullUrls)
+  uniqFullUrls.forEach(fullUrl => text = text.replace(new RegExp(fullUrl, "g"), `<${fullUrl} | ${fullUrl.match(new RegExp("https://trello\.com/c/[0-9A-Za-z]+", "g"))[0]}>`));
   return text;
 }
 
