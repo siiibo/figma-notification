@@ -1,12 +1,13 @@
 import { WebClient as SlackClient } from '@slack/web-api';
 // import { GasWebClient as SlackClient } from '@hi-se/web-api'; //GAS用SlackWebClient
 import express from 'express'
+import fetch from 'node-fetch'
 
 const app: express.Express = express();
 
 if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
-// const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
+//const FIGMA_EVENT_POST_CHANNEL = "C01AQPDC9S4"; // #sysadm
 const FIGMA_EVENT_POST_CHANNEL = "CKPHC6M43"; // #design-portal
 
 const isUrlVerification = (req: express.Request) => {
@@ -58,6 +59,52 @@ const createUrl = (event) => {
   return url;
 }
 
+const getTrelloAuthInfo = () => {
+  return {
+    key: process.env.TRELLO_API_KEY,
+    token: process.env.TRELLO_TOKEN
+  }
+}
+
+// コメントがTrelloカードリンクを含むかを判定する関数
+const includesTrelloCardId = (text) => {
+  return text.includes("trello.com/c/");
+}
+
+// コメントからTrelloカードIDを抽出する関数
+const extractTrelloCardIdsFromComment = (text) => {
+  const trelloCardIds = text
+    .split(/(?=trello.com\/c\/)/g)
+    .filter(elem => elem.includes("trello.com/c/"))
+    .map(elem => elem.match(/(?<=(trello.com\/c\/))[0-9A-Za-z]+/g))
+    .flat();
+  return Array.from(new Set(trelloCardIds));
+}
+
+// Trello APIを通じて、指定のカードにFigmaファイルへのURLを添付
+const attachFigmaFileToTrelloCard = async (cardId, figmaCommentUrl, figmaFileName) => {
+  const url = `https://api.trello.com/1/cards/${cardId}/attachments`;
+  const options = {
+    method: "post",
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...getTrelloAuthInfo(),
+      name: figmaFileName,
+      url: figmaCommentUrl
+    })
+  };
+  return fetch(url, options);
+}
+
+// TrelloカードURLをSlack表示用に短縮する。
+const shortenTrelloUrls = (text: String): String => {
+  const fullUrlRegExp = new RegExp("https://trello\.com/c/[0-9A-Za-z]+(/[a-zA-Z0-9.?,'/\\+&%$#_-]+)?", "g");
+  const fullUrls = text.match(fullUrlRegExp);
+  const uniqFullUrls = new Set(fullUrls)
+  uniqFullUrls.forEach(fullUrl => text = text.replace(new RegExp(fullUrl, "g"), `<${fullUrl} | ${fullUrl.match(new RegExp("https://trello\.com/c/[0-9A-Za-z]+", "g"))[0]}>`));
+  return text;
+}
+
 const slackClient = () => {
   const token = process.env.BOT_TOKEN;
   return new SlackClient(token);
@@ -104,7 +151,7 @@ const handleFigmaEvent = (client, event) => {
   }
 }
 
-const handleFileCommentEvent = (client, event) => {
+const handleFileCommentEvent = async (client, event) => {
   let comment;
   // Figma内でメンションがあった場合、ユーザIDを名前に置換する。
   if (event.comment.some(elem => elem.hasOwnProperty('mention'))) {
@@ -124,18 +171,29 @@ const handleFileCommentEvent = (client, event) => {
     comment = event.comment;
   }
   const url = createUrl(event);
+  const joinedComment = comment.map(comment => Object.values(comment)).flat().join(" ");
+  const terseComment = includesTrelloCardId(joinedComment) ? shortenTrelloUrls(joinedComment) : joinedComment;
 
   client.chat.postMessage({
     channel: FIGMA_EVENT_POST_CHANNEL,
     attachments: [
       {
         author_name: `${event.triggered_by.handle}`,
-        fallback: `${event.triggered_by.handle}:\n\n${comment.map(comment => Object.values(comment)).flat().join(" ")}\n\n<${url}|*${event.file_name}*>`,
-        text: `${comment.map(comment => Object.values(comment)).flat().join(" ")}`,
+        fallback: `${event.triggered_by.handle}:\n\n${terseComment}\n\n<${url}|*${event.file_name}*>`,
+        text: terseComment,
         pretext: `New comment on <${url}|*${event.file_name}*>`,
       }
     ]
   });
+
+  // trelloカードのリンクを含む場合、trelloで相互リンクを形成する
+  if (includesTrelloCardId(joinedComment)) {
+    const trelloCardIds = extractTrelloCardIdsFromComment(joinedComment);
+    const responses = await Promise.all(trelloCardIds.map(async trelloCardId => {
+      return await attachFigmaFileToTrelloCard(trelloCardId, url, event.file_name);
+    }));
+    console.info(`[trello api results]\n\n${JSON.stringify(responses)}`);
+  }
 }
 
 const handleFileVersionUpdateEvent = (client, event) => {

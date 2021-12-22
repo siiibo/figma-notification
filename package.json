@@ -18,9 +18,10 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "moment": "^2.29.1",
+    "node-fetch": "2.6.6",
+    "tslib": "^2.1.0",
     "webpack": "5.25.0",
-    "webpack-node-externals": "^3.0.0",
-    "tslib": "^2.1.0"
+    "webpack-node-externals": "^3.0.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.13",

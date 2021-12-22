@@ -6,6 +6,7 @@ TypeScript + Heroku で作成している Slack Bot です。
 
 - Figmaファイルのバージョン更新をSlackに通知
 - Figmaファイル上のコメントをSlackに通知
+  - コメントがTrelloカードへのリンクを含んでいる場合は、TrelloにFigmaファイルを添付
 
 
 ## 環境構築
